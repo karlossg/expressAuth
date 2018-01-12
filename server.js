@@ -5,22 +5,52 @@ const config = require('./config');
 const app = express();
 const googleProfile = {};
 
-// app.set('view engine', 'pug');
-// app.set('views', './views');
+passport.serializeUser((user, done) => done(null, user));
 
-// app.get('/', (req, res) => res.render('main'));
+passport.deserializeUser((obj, done) => done(null, obj));
 
-// app.get('/auth/google', (req, res) => res.render('auth'));
+passport.use(
+  new GoogleStrategy(
+    {
+      clientID: config.GOOGLE_CLIENT_ID,
+      clientSecret: config.GOOGLE_CLIENT_SECRET,
+      callbackURL: config.CALLBACK_URL
+    },
+    (accessToken, refreshToken, profile, cb) => {
+      googleProfile = {
+        id: profile.id,
+        displayName: profile.displayName
+      };
+      cb(null, profile);
+    }
+  )
+);
 
-// app.get('/auth/google/user', (req, res) => {
-//   res.render('verify', {
-//     user: {
-//       email: req.query.email,
-//       password: req.query.password
-//     }
-//   });
-// });
+app.set('view engine', 'pug');
+app.set('views', './views');
+app.use(passport.initialize());
+app.use(passport.session());
 
-// app.listen(3000);
+//app routes
+app.get('/', (req, res) => res.render('index', { user: req.user }));
 
-// app.use((req, res, next) => res.status(404).send('404! Page not found!'));
+app.get('/logged', (req, res) => res.render('logged', { user: googleProfile }));
+
+//Passport routes
+app.get(
+  '/auth/google',
+  passport.authenticate('google', {
+    scope: ['profile', 'email']
+  })
+);
+app.get(
+  '/auth/google/callback',
+  passport.authenticate('google', {
+    successRedirect: '/logged',
+    failureRedirect: '/'
+  })
+);
+
+app.listen(3000);
+
+app.use((req, res, next) => res.status(404).send('404! Page not found!'));
