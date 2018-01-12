@@ -1,6 +1,6 @@
 const express = require('express');
 const passport = require('passport');
-const GoogleStrategy = require('passport-google-oauth').OAuth2Strategy;
+const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const config = require('./config');
 const app = express();
 let googleProfile = {};
@@ -16,12 +16,10 @@ passport.use(
       clientSecret: config.GOOGLE_CLIENT_SECRET,
       callbackURL: config.CALLBACK_URL
     },
-    (accessToken, refreshToken, profile, cb) => {
-      googleProfile = {
-        id: profile.id,
-        displayName: profile.displayName
-      };
-      cb(null, profile);
+    function(accessToken, refreshToken, profile, cb) {
+      User.findOrCreate({ googleId: profile.id }, function(err, user) {
+        return cb(err, user);
+      });
     }
   )
 );
@@ -53,4 +51,4 @@ app.get(
 
 app.listen(3000);
 
-app.use((req, res, next) => res.status(404).send('404! Page not found!'));
+// app.use((req, res, next) => res.status(404).send('404! Page not found!'));
