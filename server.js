@@ -51,6 +51,11 @@ app.get(
   })
 );
 
+app.get('/logout', (req, res) => {
+  req.logout();
+  res.redirect('/');
+});
+
 app.listen(3000);
 
 app.use((req, res, next) => res.status(404).send('404! Page not found!'));

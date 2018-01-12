@@ -10,4 +10,7 @@ div.header
     li
       a(href='#about') About
     li
-      a(href='/auth/google') Login
+      if user
+        a(href='/logout') Logout
+      else 
+        a(href='/auth/google') Login
