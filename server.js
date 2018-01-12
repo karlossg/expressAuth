@@ -4,16 +4,18 @@ const app = express();
 app.set('view engine', 'pug');
 app.set('views', './views');
 
-app.use('/store', (req, res, next) => {
-  console.log('Im middleware to /store');
-  next();
+app.get('/', (req, res) => res.render('main'));
+
+app.get('/auth/google', (req, res) => res.render('auth'));
+
+app.get('/auth/google/user', (req, res) => {
+  res.render('verify', {
+    user: {
+      email: req.query.email,
+      password: req.query.password
+    }
+  });
 });
-
-app.get('/', (req, res) => res.send('Hello world!'));
-
-app.get('/store', (req, res) => res.send('This is shop'));
-
-app.get('/content', (req, res) => res.render('content'));
 
 app.listen(3000);
 
